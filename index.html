@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo en Vivo | Tenis Guadalajara</title>
+    
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f4f4; 
+            padding: 20px; 
+        }
+        h1 { color: #032f59; text-align: center; }
+        
+        /* Grid para que los tenis se acomoden en cuadritos automáticos */
+        #catalogo-contenedor { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        
+        /* Diseño de cada tarjeta de tenis */
+        .tarjeta { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            text-align: center; 
+            border-top: 4px solid #4f8bbf; 
+        }
+        .tarjeta img { max-width: 100%; height: auto; border-radius: 4px; }
+        .sku { color: #888; font-size: 0.9em; margin-bottom: 5px; }
+        .modelo { font-size: 1.1em; font-weight: bold; color: #333; margin: 5px 0; }
+        .precio { color: #f25e07; font-size: 1.4em; font-weight: bold; margin: 10px 0; }
+        .stock { font-size: 0.9em; color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Inventario Disponible - Tenis Guadalajara</h1>
+    
+    <div id="catalogo-contenedor"></div>
+
+    <script>
+        // 1. Apuntamos al archivo JSON que generó tu programa de Python
+        // Asegúrate de poner el nombre exacto de un JSON que hayas generado
+        const url_json = 'Exportacion_Completo.json';
+
+        // 2. Usamos la función nativa 'fetch' para descargar los datos
+        fetch(url_json)
+            .then(respuesta => respuesta.json()) // Lo convertimos a formato entendible
+            .then(datos => {
+                const contenedor = document.getElementById('catalogo-contenedor');
+                
+                // 3. Recorremos cada modelo de tenis en tu base de datos
+                datos.forEach(tenis => {
+                    
+                    // Si el stock es 0, nos saltamos este tenis para no mostrarlo
+                    if (tenis.existencia_total <= 0) return;
+
+                    // 4. Creamos la estructura HTML para la tarjeta usando Template Literals (``)
+                    // Nota: Suponemos que tienes una subcarpeta llamada "imagenes" junto a tu HTML
+                    const tarjetaHTML = `
+                        <div class="tarjeta">
+                            <img src="imagenes/${tenis.sku_base}.jpg" alt="${tenis.modelo}" onerror="this.src='https://via.placeholder.com/250?text=Sin+Foto'">
+                            <div class="sku">SKU: ${tenis.sku_base}</div>
+                            <div class="modelo">${tenis.modelo} | ${tenis.genero}</div>
+                            <div class="precio">$${tenis.precio_venta}</div>
+                            <div class="stock">Disponibles: ${Math.floor(tenis.existencia_total)} prs</div>
+                        </div>
+                    `;
+                    
+                    // 5. Inyectamos la tarjeta en la página web
+                    contenedor.innerHTML += tarjetaHTML;
+                });
+            })
+            .catch(error => {
+                console.error("Hubo un error cargando el JSON:", error);
+                document.getElementById('catalogo-contenedor').innerHTML = "<p>Error al cargar el inventario. Verifica que el archivo JSON exista en la carpeta.</p>";
+            });
+    </script>
+</body>
+</html>
